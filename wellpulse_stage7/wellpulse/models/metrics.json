@@ -1,0 +1,16 @@
+{
+  "time_split": {
+    "MAE": 8.09,
+    "RMSE": 11.13,
+    "R2": 0.75
+  },
+  "lowo_mean_rmse": 16.5,
+  "blocked_cv_oof": {
+    "MAE": 7.65,
+    "RMSE": 12.33,
+    "R2": 0.71
+  },
+  "anomaly_sigma_bar": 7.29,
+  "anomaly_median_residual": -0.71,
+  "rows": 5949
+}
