@@ -2,7 +2,6 @@
 import json
 from pathlib import Path
 
-import joblib
 import pandas as pd
 import plotly.graph_objects as go
 import streamlit as st
@@ -10,14 +9,12 @@ import streamlit as st
 st.set_page_config(page_title="WellPulse", page_icon="🛢️", layout="wide")
 
 BASE = Path(__file__).resolve().parent
-MODEL_PATH = BASE / "models" / "hgb_v2.joblib"
 DATA_PATH = BASE / "models" / "app_data.csv"
 METRICS_PATH = BASE / "models" / "metrics.json"
-
-
-@st.cache_resource
-def load_model():
-    return joblib.load(MODEL_PATH)
+TARGET = "AVG_DOWNHOLE_PRESSURE"
+FEATURES_V2 = ["AVG_WHP_P", "AVG_WHT_P", "AVG_CHOKE_SIZE_P", "ON_STREAM_HRS",
+               "BORE_OIL_VOL", "BORE_GAS_VOL", "BORE_WAT_VOL",
+               "days_on_prod", "cum_oil", "cum_water", "water_cut"]
 
 
 @st.cache_data
@@ -25,12 +22,22 @@ def load_data():
     return pd.read_csv(DATA_PATH, parse_dates=["date"])
 
 
-if not (MODEL_PATH.exists() and DATA_PATH.exists() and METRICS_PATH.exists()):
-    st.error("Model files not found. Put Volve_production_data.xlsx into data/ and run: "
-             "`python -m src.train`")
+@st.cache_resource
+def load_model():
+    """Fit the final model on the prepared data (a few seconds), so no pickled model is needed."""
+    from sklearn.ensemble import HistGradientBoostingRegressor
+    d = load_data()
+    model = HistGradientBoostingRegressor(random_state=42).fit(d[FEATURES_V2], d[TARGET])
+    return {"model": model, "features": FEATURES_V2, "target": TARGET}
+
+
+if not (DATA_PATH.exists() and METRICS_PATH.exists()):
+    st.error(f"Missing files. Expected: {DATA_PATH} and {METRICS_PATH}. "
+             "Generate them with `python -m src.train` (needs the Volve file in data/).")
     st.stop()
 
-art, data = load_model(), load_data()
+data = load_data()
+art = load_model()
 report = json.loads(METRICS_PATH.read_text())
 features = art["features"]
 
