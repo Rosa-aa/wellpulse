@@ -9,10 +9,10 @@ import streamlit as st
 
 st.set_page_config(page_title="WellPulse", page_icon="🛢️", layout="wide")
 
-MODEL_PATH = Path("models/hgb_v2.joblib")
-DATA_PATH = Path("models/app_data.csv")
-METRICS_PATH = Path("models/metrics.json")
-TARGET = "AVG_DOWNHOLE_PRESSURE"
+BASE = Path(__file__).resolve().parent
+MODEL_PATH = BASE / "models" / "hgb_v2.joblib"
+DATA_PATH = BASE / "models" / "app_data.csv"
+METRICS_PATH = BASE / "models" / "metrics.json"
 
 
 @st.cache_resource
